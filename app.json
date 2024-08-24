@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "scribl",
-    "slug": "scribl",
+    "slug": "scribl-tfjc7xvx0k6j5cktjp7p2",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -18,10 +18,17 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.b64weil.scribltfjc7xvx0k6j5cktjp7p2"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "74a6ca7b-8443-4f68-a6c6-bf7d44277a24"
+      }
+    },
+    "owner": "b64weil"
   }
 }
