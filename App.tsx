@@ -1,21 +1,27 @@
-import { SafeAreaView, StyleSheet } from "react-native";
-import { CursorCanvasTimer } from "./src/cursor-timer";
-import { CursorCanvasSimple } from "./src/cursor-simple";
-import { CursorAlternating } from "./src/cursor-alternating";
+import React from 'react';
+import { View, StyleSheet, Text } from 'react-native';
+import { GestureHandlerRootView, TapGestureHandler } from 'react-native-gesture-handler';
+import { Canvas, Rect, Path } from '@shopify/react-native-skia';
+import { CursorAlternating } from './src/cursor-alternating';
 
+const App = () => {
+  const cursor = { x: 50, y: 50 }; // Example cursor position
+  const cursorFill = 'blue'; // Example color
+  const paths = []; // Example paths
 
-export default function App() {
   return (
-    <SafeAreaView style={styles.container}>
+    <GestureHandlerRootView style={styles.root}>
       <CursorAlternating />
-    </SafeAreaView>
+    </GestureHandlerRootView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+    justifyContent: 'center',
+    alignItems: 'center',
+  }
 });
+
+export default App;
