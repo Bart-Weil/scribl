@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
-import { GestureHandlerRootView, TapGestureHandler } from 'react-native-gesture-handler';
-import { Canvas, Rect, Path } from '@shopify/react-native-skia';
-import { CursorAlternating } from './src/cursor-alternating';
+import { Toolbar } from './src/screens/drawing/Toolbar';
+import { ScriblCanvas } from './src/screens/drawing/ScriblCanvas';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const App = () => {
   const cursor = { x: 50, y: 50 }; // Example cursor position
@@ -10,18 +10,11 @@ const App = () => {
   const paths = []; // Example paths
 
   return (
-    <GestureHandlerRootView style={styles.root}>
-      <CursorAlternating />
+    <GestureHandlerRootView style={{flex: 1}}>
+      <ScriblCanvas />
+      <Toolbar />
     </GestureHandlerRootView>
   );
 };
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  }
-});
 
 export default App;

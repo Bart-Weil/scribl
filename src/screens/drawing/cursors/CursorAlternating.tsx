@@ -1,13 +1,18 @@
 import {
-  Canvas,
-  Rect,
-  Path,
-  SkPath,
   Skia,
   vec,
 } from "@shopify/react-native-skia";
-import React, { useState, useRef } from "react";
-import { StyleSheet, View, Text } from "react-native";
+
+import React, {
+  useRef,
+  Children,
+} from "react";
+
+import {
+  Dimensions,
+  View,
+} from "react-native";
+
 import {
   GestureDetector,
   Gesture,
@@ -16,24 +21,35 @@ import {
   PanGestureHandlerEventPayload,
   GestureUpdateEvent,
 } from "react-native-gesture-handler";
+
+import {
+  CursorProps
+} from "../../../common/types"
+
 var Victor = require('victor');
 
-const sideLength = 80;
-const strokeDelay = 450;
+export const CursorAlternating: React.FC<CursorProps> = (
+  {isDrawing, setIsDrawing,
+   paths, setPaths,
+   cursor, setCursor,
+   cursorToCanvas,
+   children,
+  }) => {
 
-export const CursorAlternating = () => {
-  const [paths, setPaths] = useState<SkPath[]>([]);
-  const [cursor, setCursor] = useState(vec(0, 0));
+  const width = Dimensions.get('window').width;
+  const height = Dimensions.get('window').height;
 
-  const [isDrawing, setIsDrawing] = useState(false);
   // where the cursor was last placed in place mode
   const placedCursor = useRef(vec(0, 0));
   // where the cursor was when drawing started
   const cursorStart = useRef(vec(0, 0));
 
+  const sideLength = 80;
+
   const onDrawingStart = (event: GestureStateChangeEvent<PanGestureHandlerEventPayload>) => {
+    console.log("drawing start");
     setPaths((old) => {
-      const cursorPos = Victor.fromObject(event).subtract(vec(sideLength/2, sideLength/2));
+      var cursorPos = Victor.fromObject(event).subtract(vec(sideLength/2, sideLength/2));
       // check if pan started on the cursor
       if (!isDrawing || Victor.fromObject(event).subtract(placedCursor.current).length() > sideLength) {
         setIsDrawing(false);
@@ -45,7 +61,8 @@ export const CursorAlternating = () => {
         const strokeStart = Victor.fromObject(placedCursor.current)
           .add(cursorPos)
           .subtract(Victor.fromObject(cursorStart.current));
-        newPath.moveTo(strokeStart.x, strokeStart.y);
+        const inverseStrokeStart = cursorToCanvas(strokeStart);
+        newPath.moveTo(inverseStrokeStart.x, inverseStrokeStart.y);
         return [...old, newPath];
       }
     });
@@ -61,11 +78,11 @@ export const CursorAlternating = () => {
         setCursor(cursorPos); 
         const currentPath = currentPaths[currentPaths.length - 1];
         const lastPoint = currentPath.getLastPt();
+        const inverseNextPoint = cursorToCanvas(cursorPos);
         const midPoint = Victor.fromObject(lastPoint)
-        .add(cursorPos)
+        .add(inverseNextPoint)
         .divide(Victor(2, 2));
-
-        currentPath.quadTo(midPoint.x, midPoint.y, cursorPos.x, cursorPos.y);
+        currentPath.quadTo(midPoint.x, midPoint.y, inverseNextPoint.x, inverseNextPoint.y);
         return [...currentPaths.slice(0, currentPaths.length - 1), currentPath];
       }
       setCursor(cursorPos);
@@ -86,40 +103,10 @@ export const CursorAlternating = () => {
     .onBegin(onDrawingStart)
     .onChange(onDrawingActive)
     .onEnd(onDrawingEnd);
-
-  const zoom = Gesture.Pinch().onStart(() => console.log("start")).onChange(() => console.log("change")).onEnd(() => console.log("end"));
-  
+    
   return (
-    <View style={style.tapArea}>
-        <GestureDetector gesture={Gesture.Simultaneous(draw, zoom)}>
-          <Canvas style={style.container}>
-            <Rect x={cursor.x} y={cursor.y} width={50} height={50} color={isDrawing ? "green" : "red"} />
-            {paths.map((path, index) => (
-              <Path
-                key={index}
-                path={path}
-                color={"black"}
-                style={"stroke"}
-                strokeWidth={2}
-              />
-            ))}
-          </Canvas>
-        </GestureDetector>
-    </View>
+      <GestureDetector gesture={Gesture.Simultaneous(draw)}>
+        {children}
+      </GestureDetector>
   );
 };
-
-const style = StyleSheet.create({
-  tapArea: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f0f0f0',
-    width: '100%',
-    height: '100%',
-  },
-  container: {
-    width: '100%',
-    height: '100%',
-  },
-});
