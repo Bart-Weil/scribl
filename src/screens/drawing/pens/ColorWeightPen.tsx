@@ -34,7 +34,7 @@ type ParamCursorIcon = (color: string, strokeWidth: number, cursorHandler: Curso
 
 class ColorWeightPen implements Pen {
 
-  quadFactor = 0.333;
+  quadFactor = 0.2;
 
   color: string;
   strokeWidth: number;

@@ -4,6 +4,7 @@ import {
 } from "@shopify/react-native-skia";
 
 import React, {
+  memo,
   useRef,
 } from "react";
 
@@ -111,3 +112,8 @@ export const CursorAlternating: React.FC<CursorHandlerProps> = (
       </GestureDetector>
   );
 };
+
+export default memo(CursorAlternating, (prevProps, nextProps) => {
+  return prevProps.pen === nextProps.pen &&
+         prevProps.isDrawing === nextProps.isDrawing;
+});
