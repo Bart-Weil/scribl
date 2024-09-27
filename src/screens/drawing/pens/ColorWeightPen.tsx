@@ -23,11 +23,18 @@ import {
   CursorHandler,
 } from "../../../common/types"
 
-import React, { ReactDOM, ReactNode } from "react";
+import React, {
+  ReactDOM,
+  ReactNode
+} from "react";
+
+var Victor = require('victor');
 
 type ParamCursorIcon = (color: string, strokeWidth: number, cursorHandler: CursorHandler, isDrawing: boolean) => ReactNode;
 
 class ColorWeightPen implements Pen {
+
+  quadFactor = 0.333;
 
   color: string;
   strokeWidth: number;
@@ -57,7 +64,15 @@ class ColorWeightPen implements Pen {
   }
 
   penMove(pathWithPaint: PathWithPaint, penPoint: SkPoint) {
-    pathWithPaint.path.lineTo(penPoint.x, penPoint.y);
+    const numPoints = pathWithPaint.path.countPoints();
+    if (numPoints <= 2) {
+      pathWithPaint.path.lineTo(penPoint.x, penPoint.y);
+    } else {
+      const last = Victor.fromObject(pathWithPaint.path.getPoint(numPoints - 2));
+      const secondLast = Victor.fromObject(pathWithPaint.path.getPoint(numPoints - 1));
+      const extrapolate = secondLast.clone().subtract(last).multiplyScalar(this.quadFactor).add(secondLast);
+      pathWithPaint.path.quadTo(extrapolate.x, extrapolate.y, penPoint.x, penPoint.y);
+    }
   }
 
   getCursorIcon(isDrawing: boolean) {
