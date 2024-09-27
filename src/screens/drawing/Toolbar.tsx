@@ -1,4 +1,5 @@
 import React, {
+  memo,
   useEffect,
   useRef,
   useState,
@@ -122,7 +123,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   }
 
   useEffect(() => {
-    setCurrentPen(eraser);
+    setCurrentPen(pen);
   }, []);
 
   const grabStart = (event: GestureStateChangeEvent<PanGestureHandlerEventPayload>) => {
@@ -234,6 +235,14 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     </Animated.View>
   );
 };
+
+export default memo(Toolbar, (prevProps, nextProps) => {
+  return prevProps.currentPen === nextProps.currentPen &&
+         prevProps.paths.length === nextProps.paths.length &&
+         prevProps.redoStack.length === nextProps.redoStack.length &&
+         prevProps.drawingAreaPos === nextProps.drawingAreaPos &&
+         prevProps.drawingAreaDims === nextProps.drawingAreaDims;
+});
 
 const styles = StyleSheet.create({
   toolbar: {
