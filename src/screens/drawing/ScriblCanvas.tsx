@@ -13,7 +13,12 @@ import {
   Matrix4,
 } from "@shopify/react-native-skia";
 
-import React, { useState, useRef, Children, memo } from "react";
+import React, {
+  useState,
+  useRef,
+  Children,
+  useMemo,
+} from "react";
 
 import {
   StyleSheet,
@@ -21,14 +26,23 @@ import {
   Text,
   Dimensions,
 } from "react-native";
-import { ScriblCanvasProps, StaticPathsProps } from "../../common/types";
+
+import {
+  ScriblCanvasProps,
+  StaticPathsProps,
+} from "../../common/types";
 
 export const ScriblCanvas: React.FC<ScriblCanvasProps> = ({activePath, paths, children, contentTransformMatrix}) => {
+  const memoPaths = useMemo(() => {
+    return paths.map((path, index) => (
+      <Path key={index} path={path.path} paint={path.paint} />
+    ));
+  }, [paths]);
   return (
     <View style={[style.canvasWrapper]}>
       <Canvas style={[style.skiaCanvas]}>
         <Group transform={[{ matrix: contentTransformMatrix}]}>
-          <MemoStaticPaths paths={paths} />
+          {memoPaths}
           <Path
             path={activePath.path}
             paint={activePath.paint}
@@ -39,20 +53,6 @@ export const ScriblCanvas: React.FC<ScriblCanvasProps> = ({activePath, paths, ch
     </View>
   );
 };
-
-const MemoStaticPaths: React.FC<StaticPathsProps> = memo(function StaticPaths({paths}) {
-  return (
-    <Group>
-      {paths.map((path, index) => (
-        <Path
-          key={index}
-          path={path.path}
-          paint={path.paint}
-        />
-      ))}
-    </Group>
-  );
-});
 
 const style = StyleSheet.create({
   canvasWrapper: {
