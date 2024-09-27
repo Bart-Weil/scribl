@@ -10,6 +10,7 @@ import {
   SkSVG,
   fitbox,
   rect,
+  Matrix4,
 } from "@shopify/react-native-skia";
 
 import React, {
@@ -101,7 +102,7 @@ export const Drawing = () => {
   const cursorBBoxSize = 80;
 
   // id matrix
-  const [zoomMatrix, setZoomMatrix] = useState(scaleMatrix(1, vec(width/2, height/2)));
+  const [zoomMatrix, setZoomMatrix] = useState<Matrix4>(scaleMatrix(1, vec(width/2, height/2)));
   const pivot = useRef(vec(width/2, width/2));
 
   const prevScale = useRef(1);

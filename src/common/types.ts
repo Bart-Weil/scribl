@@ -5,6 +5,7 @@ import {
   SkPath,
   SkPoint,
   AnimatedProp,
+  Matrix4,
 } from "@shopify/react-native-skia"
 
 import React, {
@@ -62,6 +63,6 @@ export interface ToolbarButtonProps {
 
 export interface ScriblCanvasProps {
   paths: PathWithPaint[],
-  contentTransformMatrix: number[],
+  contentTransformMatrix: Matrix4,
   children: any
 }

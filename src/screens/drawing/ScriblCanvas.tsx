@@ -10,6 +10,7 @@ import {
   Paint,
   StrokeCap,
   RoundedRect,
+  Matrix4,
 } from "@shopify/react-native-skia";
 
 import React, { useState, useRef, Children } from "react";
@@ -27,7 +28,7 @@ export const ScriblCanvas: React.FC<ScriblCanvasProps> = ({paths, children, cont
   return (
     <View style={[style.canvasWrapper]}>
       <Canvas style={[style.skiaCanvas]}>
-        <Group transform={[{ matrix: contentTransformMatrix }]}>
+        <Group transform={[{ matrix: contentTransformMatrix}]}>
           {paths.map((path, index) => (
             <Path
               key={index}

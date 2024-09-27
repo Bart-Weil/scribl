@@ -1,4 +1,4 @@
-import type { SkMatrix, Vector } from "@shopify/react-native-skia";
+import type { Matrix4, SkMatrix, Vector } from "@shopify/react-native-skia";
 import { Skia, scale } from "@shopify/react-native-skia";
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
@@ -6,7 +6,7 @@ import * as Three from "three";
 
 var Victor = require('victor');
 
-export const getPivot = (scaleMatrix: number[]) => {
+export const getPivot = (scaleMatrix: Matrix4) => {
   if (scaleMatrix[0] == 1) {
     return Victor(0, 0);
   } else {
@@ -15,7 +15,7 @@ export const getPivot = (scaleMatrix: number[]) => {
   }
 }
 
-export const getScaleFactor = (scaleMatrix: number[]) => {
+export const getScaleFactor = (scaleMatrix: Matrix4) => {
   "worklet";
   return scaleMatrix[0];
 }
@@ -25,17 +25,17 @@ export const scaleMatrix = (factor: number, pivot: Vector) => {
   return [factor, 0, 0, pivot.x - factor*pivot.x, 
           0, factor, 0, pivot.y - factor*pivot.y, 
           0, 0, 1, 0, 
-          0, 0, 0, 1];
+          0, 0, 0, 1] as Matrix4;
 };
 
-export const applyInverseScale = (scaleMatrix: number[], vector: Vector) => {
+export const applyInverseScale = (scaleMatrix: Matrix4, vector: Vector) => {
   "worklet";
   const factor = getScaleFactor(scaleMatrix);
   const pivot = getPivot(scaleMatrix);
   return Victor.fromObject(vector).subtract(pivot).divide(Victor(factor, factor)).add(pivot);
 }
 
-export const applyScaleToScale = (scaleMatrixBefore: number[], scaleMatrixAfter: number[]) => {
+export const applyScaleToScale = (scaleMatrixBefore: Matrix4, scaleMatrixAfter: Matrix4) => {
   "worklet";
   const factorAfter = scaleMatrixAfter[0];
   const factorBefore = scaleMatrixBefore[0];
@@ -48,7 +48,7 @@ export const applyScaleToScale = (scaleMatrixBefore: number[], scaleMatrixAfter:
   return [applyFactor, 0, 0, applyPivot.x, 
           0, applyFactor, 0, applyPivot.y, 
           0, 0, 1, 0, 
-          0, 0, 0, 1];
+          0, 0, 0, 1] as Matrix4;
 }
 
 export const prettyPrintScaleMatrix = (scaleMatrix: number[]) => {
