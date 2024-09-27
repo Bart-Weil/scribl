@@ -1,20 +1,47 @@
 import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
-import { Toolbar } from './src/screens/drawing/Toolbar';
-import { ScriblCanvas } from './src/screens/drawing/ScriblCanvas';
+import { View, StyleSheet, Text, SafeAreaView } from 'react-native';
+import { Drawing } from './src/screens/drawing/Drawing';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import {
+  useFonts,
+  KaiseiTokumin_400Regular,
+  KaiseiTokumin_500Medium,
+  KaiseiTokumin_700Bold,
+  KaiseiTokumin_800ExtraBold,
+} from '@expo-google-fonts/kaisei-tokumin';
+
 const App = () => {
-  const cursor = { x: 50, y: 50 }; // Example cursor position
-  const cursorFill = 'blue'; // Example color
-  const paths = []; // Example paths
+
+  let [fontsLoaded] = useFonts({
+    KaiseiTokumin_400Regular,
+    KaiseiTokumin_500Medium,
+    KaiseiTokumin_700Bold,
+    KaiseiTokumin_800ExtraBold,
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
-    <GestureHandlerRootView style={{flex: 1}}>
-      <ScriblCanvas />
-      <Toolbar />
-    </GestureHandlerRootView>
+    <SafeAreaView style={styles.root}>
+      <GestureHandlerRootView style={{flex: 1}}>
+          <Drawing />
+      </GestureHandlerRootView>
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  safeAreaView: {
+    flex: 1,
+
+  },
+  root: {
+    flex: 1,
+    backgroundColor: '#252422',
+  }
+});
 
 export default App;

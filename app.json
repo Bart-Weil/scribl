@@ -29,6 +29,14 @@
         "projectId": "74a6ca7b-8443-4f68-a6c6-bf7d44277a24"
       }
     },
-    "owner": "b64weil"
+    "owner": "b64weil",
+    "plugins": [
+      [
+        "expo-font",
+        {
+          "fonts": ["./assets/fonts/Kaisei_Decol/KaiseiDecol-Bold.ttf"]
+        }
+      ]
+    ]
   }
 }

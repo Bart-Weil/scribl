@@ -5,12 +5,10 @@ import {
 
 import React, {
   useRef,
-  Children,
 } from "react";
 
 import {
   Dimensions,
-  View,
 } from "react-native";
 
 import {
@@ -23,15 +21,21 @@ import {
 } from "react-native-gesture-handler";
 
 import {
-  CursorProps
+  CursorHandlerProps
 } from "../../../common/types"
+
+import {
+  hitTest,
+} from "./Hitbox"
 
 var Victor = require('victor');
 
-export const CursorAlternating: React.FC<CursorProps> = (
-  {isDrawing, setIsDrawing,
+export const CursorAlternating: React.FC<CursorHandlerProps> = (
+  {pen,
+   isDrawing, setIsDrawing,
    paths, setPaths,
    cursor, setCursor,
+   redoStack, setRedoStack,
    cursorToCanvas,
    children,
   }) => {
@@ -47,23 +51,23 @@ export const CursorAlternating: React.FC<CursorProps> = (
   const sideLength = 80;
 
   const onDrawingStart = (event: GestureStateChangeEvent<PanGestureHandlerEventPayload>) => {
-    console.log("drawing start");
     setPaths((old) => {
       var cursorPos = Victor.fromObject(event).subtract(vec(sideLength/2, sideLength/2));
       // check if pan started on the cursor
-      if (!isDrawing || Victor.fromObject(event).subtract(placedCursor.current).length() > sideLength) {
+      console.log("tap: ", event.x, event.y, "cursor: ", cursorPos.x, cursorPos.y)
+      if (!isDrawing || !hitTest({x: event.x, y: event.y}, {x: placedCursor.current.x, y: placedCursor.current.y, width: sideLength, height: sideLength})) {
         setIsDrawing(false);
         setCursor(cursorPos);
         return old
       } else {
         cursorStart.current = cursorPos;
-        const newPath = Skia.Path.Make();
         const strokeStart = Victor.fromObject(placedCursor.current)
           .add(cursorPos)
           .subtract(Victor.fromObject(cursorStart.current));
         const inverseStrokeStart = cursorToCanvas(strokeStart);
-        newPath.moveTo(inverseStrokeStart.x, inverseStrokeStart.y);
-        return [...old, newPath];
+        pen.penDown(old, inverseStrokeStart)
+        setRedoStack([]);
+        return [...old];
       }
     });
   };
@@ -77,13 +81,10 @@ export const CursorAlternating: React.FC<CursorProps> = (
           .subtract(Victor.fromObject(cursorStart.current));
         setCursor(cursorPos); 
         const currentPath = currentPaths[currentPaths.length - 1];
-        const lastPoint = currentPath.getLastPt();
+        const lastPoint = currentPath.path.getLastPt();
         const inverseNextPoint = cursorToCanvas(cursorPos);
-        const midPoint = Victor.fromObject(lastPoint)
-        .add(inverseNextPoint)
-        .divide(Victor(2, 2));
-        currentPath.quadTo(midPoint.x, midPoint.y, inverseNextPoint.x, inverseNextPoint.y);
-        return [...currentPaths.slice(0, currentPaths.length - 1), currentPath];
+        pen.penMove(currentPath, cursorToCanvas(cursorPos))
+        return [...currentPaths];
       }
       setCursor(cursorPos);
       return currentPaths;
@@ -95,17 +96,17 @@ export const CursorAlternating: React.FC<CursorProps> = (
     setIsDrawing(!isDrawing);
   };
 
-  const draw = Gesture.Pan()
+  const drawGesture = Gesture.Pan()
     .minDistance(0)
     .activeOffsetX(0)
     .activeOffsetY(0)
     .maxPointers(1)
-    .onBegin(onDrawingStart)
+    .onStart(onDrawingStart)
     .onChange(onDrawingActive)
     .onEnd(onDrawingEnd);
     
   return (
-      <GestureDetector gesture={Gesture.Simultaneous(draw)}>
+      <GestureDetector gesture={drawGesture}>
         {children}
       </GestureDetector>
   );

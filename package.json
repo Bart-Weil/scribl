@@ -9,28 +9,39 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "@shopify/react-native-skia": "^1.3.8",
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@expo-google-fonts/inter": "^0.2.3",
+    "@expo-google-fonts/kaisei-tokumin": "^0.2.3",
+    "@juggle/resize-observer": "^3.4.0",
+    "@mui/material": "^6.1.1",
+    "@shopify/react-native-skia": "1.2.3",
     "@wwimmo/react-native-sketch-canvas": "^0.8.6",
-    "expo": "~51.0.20",
+    "expo": "^51.0.32",
+    "expo-font": "~12.0.10",
     "expo-status-bar": "~1.12.1",
     "nativewind": "^2.0.11",
     "react": "18.2.0",
-    "react-native": "0.74.3",
+    "react-cool-dimensions": "^3.0.1",
+    "react-native": "0.74.5",
     "react-native-canvas": "^0.1.40",
     "react-native-cli": "^2.0.1",
     "react-native-gesture-handler": "~2.16.1",
     "react-native-reanimated": "~3.10.1",
-    "react-native-webview": "^13.10.5",
-    "react-native-zoom-toolkit": "^2.0.1",
+    "react-native-vector-icons": "^10.2.0",
+    "react-native-webview": "13.8.6",
+    "react-native-zoom-toolkit": "^3.0.0",
     "three": "^0.168.0",
     "victor": "^1.1.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0",
-    "@types/react": "~18.2.45",
+    "@babel/core": "^7.25.2",
+    "@types/react": "~18.2.79",
+    "@types/react-dom": "^18.3.0",
     "@types/three": "^0.168.0",
+    "react-dom": "^18.3.1",
     "tailwindcss": "^3.3.2",
-    "typescript": "^5.1.3"
+    "typescript": "~5.3.3"
   },
   "private": true
 }
