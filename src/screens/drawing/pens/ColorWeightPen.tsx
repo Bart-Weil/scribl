@@ -48,7 +48,7 @@ class ColorWeightPen implements Pen {
     this.paramCursorIcon = paramCursorIcon;
   }
 
-  penDown(paths: PathWithPaint[], penPoint: SkPoint) {
+  penDown(penPoint: SkPoint) {
     const path: SkPath = Skia.Path.Make();
     path.moveTo(penPoint.x, penPoint.y);
     path.lineTo(penPoint.x, penPoint.y);
@@ -60,7 +60,7 @@ class ColorWeightPen implements Pen {
     paint.setStrokeCap(StrokeCap.Round);
     paint.setStrokeJoin(StrokeJoin.Round);
     const pathStub: PathWithPaint = {path: path, paint: paint};
-    paths.push(pathStub);
+    return pathStub;
   }
 
   penMove(pathWithPaint: PathWithPaint, penPoint: SkPoint) {
@@ -102,7 +102,7 @@ export const eraser = new ColorWeightPen(
 
 export const pen = new ColorWeightPen(
   "#000000",
-  6,
+  4,
   CursorHandler.CursorAlternating,
   (color: string, strokeWidth: number, cursorHandler: CursorHandler, isDrawing: boolean) => {
     const penNib = rrect(rect(0, 0, strokeWidth, strokeWidth), strokeWidth/2, strokeWidth/2);

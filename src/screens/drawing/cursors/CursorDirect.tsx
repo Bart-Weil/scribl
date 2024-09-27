@@ -31,6 +31,7 @@ export const CursorDirect: React.FC<CursorHandlerProps> = (
   {pen,
    isDrawing, setIsDrawing,
    paths, setPaths,
+   activePath, setActivePath,
    cursor, setCursor,
    redoStack, setRedoStack,
    cursorToCanvas,
@@ -40,23 +41,19 @@ export const CursorDirect: React.FC<CursorHandlerProps> = (
   const sideLength = 80;
 
   const onDrawingStart = (event: GestureStateChangeEvent<PanGestureHandlerEventPayload>) => {
-    setPaths((old) => {
-      const eventPosVec = Victor.fromObject({x: event.x, y: event.y})
-      setCursor(eventPosVec);
-      const inverseStrokeStart = cursorToCanvas(Victor.fromObject({x: event.x, y: event.y}));
-      pen.penDown(old, inverseStrokeStart)
-      setRedoStack([]);
-      return [...old];
-    });
+    const inverseStrokeStart = cursorToCanvas(Victor.fromObject(event));
+    setPaths((old) => [...old, activePath]);
+    setActivePath(pen.penDown(inverseStrokeStart));
+    setRedoStack([]);
   };
 
   const onDrawingActive = (event: GestureUpdateEvent<PanGestureHandlerEventPayload & PanGestureChangeEventPayload>) => {
-    setPaths((currentPaths) => {
-      const eventPosVec = Victor.fromObject({x: event.x, y: event.y})
-      setCursor(eventPosVec);
-      const currentPath = currentPaths[currentPaths.length - 1];
-      pen.penMove(currentPath, cursorToCanvas(eventPosVec));
-      return [...currentPaths];
+    setActivePath((old) => {
+      const touchPos = Victor.fromObject(event);
+      setCursor(touchPos); 
+      pen.penMove(old, cursorToCanvas(touchPos));
+      return {path: old.path, paint: old.paint};
+
     });
   };
 
@@ -65,7 +62,7 @@ export const CursorDirect: React.FC<CursorHandlerProps> = (
     .activeOffsetX(0)
     .activeOffsetY(0)
     .maxPointers(1)
-    .onBegin(onDrawingStart)
+    .onStart(onDrawingStart)
     .onChange(onDrawingActive);
     
   return (

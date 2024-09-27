@@ -23,12 +23,14 @@ export type PathWithPaint = {
 }
 
 export interface ToolProps {
+  activePath: PathWithPaint,
+  setActivePath: React.Dispatch<React.SetStateAction<PathWithPaint>>,
   paths: PathWithPaint[],
   setPaths: React.Dispatch<React.SetStateAction<PathWithPaint[]>>,
 }
 
 export interface Pen {
-  penDown(paths: PathWithPaint[], penPoint: SkPoint): void,
+  penDown(penPoint: SkPoint): PathWithPaint,
   penMove(path: PathWithPaint, penPoint: SkPoint): void,
   cursorHandler: CursorHandler,
   getCursorIcon: (isDrawing: boolean) => React.ReactNode,
@@ -62,7 +64,12 @@ export interface ToolbarButtonProps {
 }
 
 export interface ScriblCanvasProps {
+  activePath: PathWithPaint,
   paths: PathWithPaint[],
   contentTransformMatrix: Matrix4,
   children: any
+}
+
+export interface StaticPathsProps {
+  paths: PathWithPaint[]
 }

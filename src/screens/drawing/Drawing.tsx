@@ -79,6 +79,7 @@ export const Drawing = () => {
   const [drawingAreaPos, setDrawingAreaPos] = useState({x: 0, y: 0});
   const [drawingAreaDims, setDrawingAreaDims] = useState({width: 0, height: 0});
 
+  const [activePath, setActivePath] = useState<PathWithPaint>({path: Skia.Path.Make(), paint: Skia.Paint()});
   const [paths, setPaths] = useState<PathWithPaint[]>([]);
   const [cursor, setCursor] = useState(vec(0, 0));
 
@@ -86,7 +87,7 @@ export const Drawing = () => {
 
   const [currentPen, setCurrentPen] = useState<Pen>(
     {
-      penDown: (paths: PathWithPaint[], penPoint: SkPoint) => paths,
+      penDown: (penPoint: SkPoint) => ({path: Skia.Path.Make(), paint: Skia.Paint()}),
       penMove: (path: PathWithPaint, penPoint: SkPoint) => path,
       cursorHandler: CursorHandler.CursorDirect,
       getCursorIcon: () => (<></>),
@@ -129,6 +130,8 @@ export const Drawing = () => {
         return (<CursorAlternating pen={currentPen}
                                    isDrawing={isDrawing}
                                    setIsDrawing={setIsDrawing}
+                                   activePath={activePath}
+                                   setActivePath={setActivePath}
                                    paths={paths}
                                    setPaths={setPaths}
                                    cursor={cursor}
@@ -142,6 +145,8 @@ export const Drawing = () => {
         return (<CursorDirect pen={currentPen}
                               isDrawing={isDrawing}
                               setIsDrawing={setIsDrawing}
+                              activePath={activePath}
+                              setActivePath={setActivePath}
                               paths={paths}
                               setPaths={setPaths}
                               cursor={cursor}
@@ -163,7 +168,7 @@ export const Drawing = () => {
         <GestureDetector gesture={zoom}>
           <>
           {renderCurrentPenHandler(
-            <ScriblCanvas paths={paths} contentTransformMatrix={zoomMatrix}>
+            <ScriblCanvas activePath={activePath} paths={paths} contentTransformMatrix={zoomMatrix}>
               <Group transform={fitbox("contain", rect(0, 0, cursorBBoxSize, cursorBBoxSize),
                                                   rect(cursor.x, cursor.y, cursorBBoxSize, cursorBBoxSize))}>
                 {currentPen.getCursorIcon(isDrawing)}
@@ -180,6 +185,8 @@ export const Drawing = () => {
           }>
             <Toolbar currentPen={currentPen}
                      setCurrentPen={setCurrentPen}
+                     activePath={activePath}
+                     setActivePath={setActivePath}
                      paths={paths}
                      setPaths={setPaths}
                      redoStack={redoStack}

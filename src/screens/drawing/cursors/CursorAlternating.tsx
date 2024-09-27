@@ -34,6 +34,7 @@ var Victor = require('victor');
 export const CursorAlternating: React.FC<CursorHandlerProps> = (
   {pen,
    isDrawing, setIsDrawing,
+   activePath, setActivePath,
    paths, setPaths,
    cursor, setCursor,
    redoStack, setRedoStack,
@@ -52,43 +53,37 @@ export const CursorAlternating: React.FC<CursorHandlerProps> = (
   const sideLength = 80;
 
   const onDrawingStart = (event: GestureStateChangeEvent<PanGestureHandlerEventPayload>) => {
-    setPaths((old) => {
-      var cursorPos = Victor.fromObject(event).subtract(vec(sideLength/2, sideLength/2));
-      // check if pan started on the cursor
-      console.log("tap: ", event.x, event.y, "cursor: ", cursorPos.x, cursorPos.y)
-      if (!isDrawing || !hitTest({x: event.x, y: event.y}, {x: placedCursor.current.x, y: placedCursor.current.y, width: sideLength, height: sideLength})) {
-        setIsDrawing(false);
-        setCursor(cursorPos);
-        return old
-      } else {
-        cursorStart.current = cursorPos;
-        const strokeStart = Victor.fromObject(placedCursor.current)
-          .add(cursorPos)
-          .subtract(Victor.fromObject(cursorStart.current));
-        const inverseStrokeStart = cursorToCanvas(strokeStart);
-        pen.penDown(old, inverseStrokeStart)
-        setRedoStack([]);
-        return [...old];
-      }
-    });
+    var cursorPos = Victor.fromObject(event).subtract(vec(sideLength/2, sideLength/2));
+    // check if pan started on the cursor
+    console.log("tap: ", event.x, event.y, "cursor: ", cursorPos.x, cursorPos.y)
+    if (!isDrawing || !hitTest({x: event.x, y: event.y}, {x: placedCursor.current.x, y: placedCursor.current.y, width: sideLength, height: sideLength})) {
+      setIsDrawing(false);
+      setCursor(cursorPos);
+    } else {
+      cursorStart.current = cursorPos;
+      const strokeStart = Victor.fromObject(placedCursor.current)
+        .add(cursorPos)
+        .subtract(Victor.fromObject(cursorStart.current));
+      const inverseStrokeStart = cursorToCanvas(strokeStart);
+      setPaths((old) => [...old, activePath]);
+      setActivePath(pen.penDown(inverseStrokeStart));
+      setRedoStack([]);
+    }
   };
 
   const onDrawingActive = (event: GestureUpdateEvent<PanGestureHandlerEventPayload & PanGestureChangeEventPayload>) => {
-    setPaths((currentPaths) => {
+    setActivePath((old) => {
       var cursorPos = Victor.fromObject(event)
         .subtract(vec(sideLength/2, sideLength/2))
       if (isDrawing) {  
         cursorPos = cursorPos.add(Victor.fromObject(placedCursor.current))
           .subtract(Victor.fromObject(cursorStart.current));
         setCursor(cursorPos); 
-        const currentPath = currentPaths[currentPaths.length - 1];
-        const lastPoint = currentPath.path.getLastPt();
-        const inverseNextPoint = cursorToCanvas(cursorPos);
-        pen.penMove(currentPath, cursorToCanvas(cursorPos))
-        return [...currentPaths];
+        pen.penMove(old, cursorToCanvas(cursorPos))
+        return {path: old.path, paint: old.paint};
       }
       setCursor(cursorPos);
-      return currentPaths;
+      return old;
     });
   };
 
