@@ -18,6 +18,7 @@ import React, {
   useRef, 
   useCallback,
   ReactNode,
+  createContext,
 } from "react";
 
 import ReactDOMServer from 'react-dom/server';
@@ -45,7 +46,7 @@ import {
 import {
   Toolbar,
   areToolbarPropsEqual,
-} from '../../../src/screens/drawing/Toolbar';
+} from './toolbar/Toolbar';
 
 import {
   BaseHeader
@@ -102,6 +103,20 @@ export const Drawing = () => {
   const placedCursor = useRef(vec(0, 0));
   // where the cursor was when drawing started
   const cursorStart = useRef(vec(0, 0));
+
+  const drawingContext = createContext({
+    isDrawing: isDrawing,
+    setIsDrawing: setIsDrawing,
+    activePath: activePath,
+    setActivePath: setActivePath,
+    paths: paths,
+    setPaths: setPaths,
+    cursor: cursor,
+    setCursor: setCursor,
+    redoStack: redoStack,
+    setRedoStack: setRedoStack,
+    cursorToCanvas: (pos: any) => applyInverseScale(zoomMatrix, pos),
+  })
 
   const cursorBBoxSize = 80;
 
