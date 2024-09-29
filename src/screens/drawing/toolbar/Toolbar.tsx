@@ -276,56 +276,54 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   return (
     <>
       {toolbarHints()}
-
-      <Animated.View style={[toolbarStyle, getToolbarPosition().toolbar, styles.toolbar]}>
-        <GestureDetector gesture={grabGesture}>
-          <Animated.View hitSlop={{top: 20, bottom: 50, left: 20, right: 20}}
-                        style={[toolbarHandleStyle, styles.toolbarHandle]}/>
-        </GestureDetector>
-
-        <Animated.View style={[toolbarButtonContainerStyle, styles.buttonContainer]}>
-          <ToolbarUndoRedoButton onPress={() => setDrawingState({type: 'setCurrentPen', payload: pen})}
-                        isSelected={drawingState.currentPen === pen}
-                        iconName="pencil"
-          />
-          <ToolbarUndoRedoButton onPress={() => setDrawingState({type: 'setCurrentPen', payload: eraser})}
-                          isSelected={drawingState.currentPen === eraser}
-                          iconName="eraser"
-          />
-          <ToolbarUndoRedoButton onPress={() => {
-            console.log("undo");
-            if (drawingState.paths.length === 0) {
-              setDrawingState({type: 'setRedoStack', payload: drawingState.redoStack});
-            } else {
-              setDrawingState({type: 'setRedoStack', payload: [...drawingState.redoStack, drawingState.activePath]});
-            }
-            const lastPathInd = drawingState.paths.length - 1;
-            setDrawingState({type: 'setActivePath', payload: drawingState.paths[lastPathInd]});
-            setDrawingState({type: 'setPaths', payload: drawingState.paths.slice(0, lastPathInd)});
-          }}
-            iconName={undoIcon}
-            
-          />
-          <ToolbarUndoRedoButton onPress={() => {
-            const lastRedoInd = drawingState.redoStack.length - 1;
-            console.log("redo");
-            if (drawingState.redoStack.length === 0) {
-            } else {
-              setDrawingState({type: 'setActivePath', payload: drawingState.redoStack[lastRedoInd]});
-              setDrawingState({type: 'setPaths', payload: [...drawingState.paths, drawingState.activePath]});
-            }
-            setDrawingState({type: 'setRedoStack', payload: drawingState.redoStack.slice(0, lastRedoInd)});
-          }}
-            iconName={redoIcon}
-          />
-          <ToolbarUndoRedoButton onPress={() => {
-            console.log("post");
-          }}
-            iconName="paper-plane"
-            isSelected={true}
-          />
+      <GestureDetector gesture={grabGesture}>
+        <Animated.View style={[toolbarStyle, getToolbarPosition().toolbar, styles.toolbar]}>
+            <Animated.View hitSlop={{top: 20, bottom: 50, left: 20, right: 20}}
+                          style={[toolbarHandleStyle, styles.toolbarHandle]}/>
+          <Animated.View style={[toolbarButtonContainerStyle, styles.buttonContainer]}>
+            <ToolbarUndoRedoButton onPress={() => setDrawingState({type: 'setCurrentPen', payload: pen})}
+                          isSelected={drawingState.currentPen === pen}
+                          iconName="pencil"
+            />
+            <ToolbarUndoRedoButton onPress={() => setDrawingState({type: 'setCurrentPen', payload: eraser})}
+                            isSelected={drawingState.currentPen === eraser}
+                            iconName="eraser"
+            />
+            <ToolbarUndoRedoButton onPress={() => {
+              console.log("undo");
+              if (drawingState.paths.length === 0) {
+                setDrawingState({type: 'setRedoStack', payload: drawingState.redoStack});
+              } else {
+                setDrawingState({type: 'setRedoStack', payload: [...drawingState.redoStack, drawingState.activePath]});
+              }
+              const lastPathInd = drawingState.paths.length - 1;
+              setDrawingState({type: 'setActivePath', payload: drawingState.paths[lastPathInd]});
+              setDrawingState({type: 'setPaths', payload: drawingState.paths.slice(0, lastPathInd)});
+            }}
+              iconName={undoIcon}
+              
+            />
+            <ToolbarUndoRedoButton onPress={() => {
+              const lastRedoInd = drawingState.redoStack.length - 1;
+              console.log("redo");
+              if (drawingState.redoStack.length === 0) {
+              } else {
+                setDrawingState({type: 'setActivePath', payload: drawingState.redoStack[lastRedoInd]});
+                setDrawingState({type: 'setPaths', payload: [...drawingState.paths, drawingState.activePath]});
+              }
+              setDrawingState({type: 'setRedoStack', payload: drawingState.redoStack.slice(0, lastRedoInd)});
+            }}
+              iconName={redoIcon}
+            />
+            <ToolbarUndoRedoButton onPress={() => {
+              console.log("post");
+            }}
+              iconName="paper-plane"
+              isSelected={true}
+            />
+          </Animated.View>
         </Animated.View>
-      </Animated.View>
+      </GestureDetector>
     </>
   );
 };
