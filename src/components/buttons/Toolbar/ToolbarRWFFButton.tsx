@@ -20,7 +20,7 @@ import {
 
 var Victor = require('victor');
 
-export const ToolbarButton = ({onPress, isSelected, iconName}: ToolbarButtonProps) => {
+export const ToolbarRWFFButton = ({onPress, isSelected, iconName}: ToolbarButtonProps) => {
   return (
     <Pressable onPress={onPress}
                style={({ pressed }) => [pressed || isSelected ? styles.buttonPressed : styles.buttonUnpressed]}

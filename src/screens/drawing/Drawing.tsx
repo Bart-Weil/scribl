@@ -43,7 +43,8 @@ import {
 } from "./ScriblCanvas"
 
 import {
-  Toolbar
+  Toolbar,
+  areToolbarPropsEqual,
 } from '../../../src/screens/drawing/Toolbar';
 
 import {
@@ -71,6 +72,8 @@ import {
 } from "./MatrixHelpers";
 
 var Victor = require('victor');
+
+const MemoToolbar = React.memo(Toolbar, areToolbarPropsEqual);
 
 export const Drawing = () => {
   const width = Dimensions.get('window').width;
@@ -183,7 +186,7 @@ export const Drawing = () => {
                   console.log("dims", event.nativeEvent.layout.width, event.nativeEvent.layout.height);
                 }
           }>
-            <Toolbar currentPen={currentPen}
+            <MemoToolbar currentPen={currentPen}
                      setCurrentPen={setCurrentPen}
                      activePath={activePath}
                      setActivePath={setActivePath}
@@ -224,6 +227,7 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
   header: {
     flex: 1,
