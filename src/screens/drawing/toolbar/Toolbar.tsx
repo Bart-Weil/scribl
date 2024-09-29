@@ -333,7 +333,8 @@ export const areToolbarPropsEqual = (prevProps: ToolbarProps, nextProps: Toolbar
          prevProps.drawingState.currentPen.cursorHandler === nextProps.drawingState.currentPen.cursorHandler &&
          prevProps.drawingState.activePath.path.countPoints() === nextProps.drawingState.activePath.path.countPoints() &&
          prevProps.drawingState.paths.length === nextProps.drawingState.paths.length &&
-         prevProps.drawingState.redoStack.length === nextProps.drawingState.redoStack.length;
+         prevProps.drawingState.redoStack.length === nextProps.drawingState.redoStack.length &&
+         prevProps.drawingAreaDims === nextProps.drawingAreaDims;
 };
 
 const styles = StyleSheet.create({
