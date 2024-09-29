@@ -28,12 +28,8 @@ import {
 var Victor = require('victor');
 
 export const CursorDirect: React.FC<CursorHandlerProps> = (
-  {pen,
-   isDrawing, setIsDrawing,
-   paths, setPaths,
-   activePath, setActivePath,
-   cursor, setCursor,
-   redoStack, setRedoStack,
+  {drawingState,
+   setDrawingState,
    cursorToCanvas,
    children,
   }) => {
@@ -42,19 +38,16 @@ export const CursorDirect: React.FC<CursorHandlerProps> = (
 
   const onDrawingStart = (event: GestureStateChangeEvent<PanGestureHandlerEventPayload>) => {
     const inverseStrokeStart = cursorToCanvas(Victor.fromObject(event));
-    setPaths((old) => [...old, activePath]);
-    setActivePath(pen.penDown(inverseStrokeStart));
-    setRedoStack([]);
+    setDrawingState({type: 'setPaths', payload: [...drawingState.paths, drawingState.activePath]});
+    setDrawingState({type: 'setActivePath', payload: drawingState.currentPen.penDown(inverseStrokeStart)});
+    setDrawingState({type: 'setRedoStack', payload: []});
   };
 
   const onDrawingActive = (event: GestureUpdateEvent<PanGestureHandlerEventPayload & PanGestureChangeEventPayload>) => {
-    setActivePath((old) => {
-      const touchPos = Victor.fromObject(event);
-      setCursor(touchPos); 
-      pen.penMove(old, cursorToCanvas(touchPos));
-      return {path: old.path, paint: old.paint};
-
-    });
+    const touchPos = Victor.fromObject(event);
+    setDrawingState({type: 'setCursor', payload: touchPos});
+    drawingState.currentPen.penMove(drawingState.activePath, cursorToCanvas(touchPos));
+    return {path: drawingState.activePath.path, paint: drawingState.activePath.paint};
   };
 
   const drawGesture = Gesture.Pan()
@@ -73,6 +66,6 @@ export const CursorDirect: React.FC<CursorHandlerProps> = (
 };
 
 export default memo(CursorDirect, (prevProps, nextProps) => {
-  return prevProps.pen === nextProps.pen &&
-         prevProps.isDrawing === nextProps.isDrawing;
+  return prevProps.drawingState.currentPen === nextProps.drawingState.currentPen &&
+         prevProps.drawingState.isDrawing === nextProps.drawingState.isDrawing;
 });

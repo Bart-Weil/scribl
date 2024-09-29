@@ -68,14 +68,9 @@ enum ToolbarMagnetName {
 };
 
 export const Toolbar: React.FC<ToolbarProps> = ({
-  currentPen,
-  setCurrentPen,
-  activePath,
-  setActivePath,
-  paths,
-  setPaths,
-  redoStack,
-  setRedoStack,
+  drawingState,
+  setDrawingState,
+  cursorToCanvas,
   drawingAreaDims,
 }) => {
 
@@ -95,7 +90,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   }, []);
 
   useEffect(() => {
-    setCurrentPen(pen);
+    setDrawingState({type: 'setCurrentPen', payload: pen});
   }, []);
 
   const toolbarSV = useSharedValue<ToolbarSV>({width: toolbarLongAxis, height: toolbarShortAxis, borderRadius: borderRadius, flexDirection: 'column' as FlexDirection, margin: 10});
@@ -208,8 +203,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                                    .onEnd(grabEnd);
   grabGesture.minDistance(0);
 
-  const undoIcon = (currentPen.cursorHandler === CursorHandler.CursorAlternating) ? "backward-fast" : "arrow-rotate-left";
-  const redoIcon = (currentPen.cursorHandler === CursorHandler.CursorAlternating) ? "forward-fast" : "arrow-rotate-right";
+  const undoIcon = (drawingState.currentPen.cursorHandler === CursorHandler.CursorAlternating) ? "backward-fast" : "arrow-rotate-left";
+  const redoIcon = (drawingState.currentPen.cursorHandler === CursorHandler.CursorAlternating) ? "forward-fast" : "arrow-rotate-right";
 
   const toolbarStyle = useAnimatedStyle(() => {
     return {
@@ -289,38 +284,37 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         </GestureDetector>
 
         <Animated.View style={[toolbarButtonContainerStyle, styles.buttonContainer]}>
-          <ToolbarUndoRedoButton onPress={() => setCurrentPen(pen)}
-                        isSelected={currentPen === pen}
+          <ToolbarUndoRedoButton onPress={() => setDrawingState({type: 'setCurrentPen', payload: pen})}
+                        isSelected={drawingState.currentPen === pen}
                         iconName="pencil"
           />
-          <ToolbarUndoRedoButton onPress={() => setCurrentPen(eraser)}
-                          isSelected={currentPen === eraser}
+          <ToolbarUndoRedoButton onPress={() => setDrawingState({type: 'setCurrentPen', payload: eraser})}
+                          isSelected={drawingState.currentPen === eraser}
                           iconName="eraser"
           />
           <ToolbarUndoRedoButton onPress={() => {
             console.log("undo");
-            setRedoStack((old) => {
-              if (paths.length === 0) {
-                return old;
-              }
-              return [...old, activePath];
-            });
-            setActivePath(paths[paths.length - 1]);
-            setPaths(paths.slice(0, paths.length - 1));
+            if (drawingState.paths.length === 0) {
+              setDrawingState({type: 'setRedoStack', payload: drawingState.redoStack});
+            } else {
+              setDrawingState({type: 'setRedoStack', payload: [...drawingState.redoStack, drawingState.activePath]});
+            }
+            const lastPathInd = drawingState.paths.length - 1;
+            setDrawingState({type: 'setActivePath', payload: drawingState.paths[lastPathInd]});
+            setDrawingState({type: 'setPaths', payload: drawingState.paths.slice(0, lastPathInd)});
           }}
             iconName={undoIcon}
             
           />
           <ToolbarUndoRedoButton onPress={() => {
+            const lastRedoInd = drawingState.redoStack.length - 1;
             console.log("redo");
-            setPaths((old) => {
-              if (redoStack.length === 0) {
-                return old;
-              }
-              setActivePath(redoStack[redoStack.length - 1]);
-              return [...old, activePath];
-            });
-            setRedoStack([...(redoStack.slice(0, redoStack.length - 1))]);
+            if (drawingState.redoStack.length === 0) {
+            } else {
+              setDrawingState({type: 'setActivePath', payload: drawingState.redoStack[lastRedoInd]});
+              setDrawingState({type: 'setPaths', payload: [...drawingState.paths, drawingState.activePath]});
+            }
+            setDrawingState({type: 'setRedoStack', payload: drawingState.redoStack.slice(0, lastRedoInd)});
           }}
             iconName={redoIcon}
           />
@@ -337,12 +331,11 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 };
 
 export const areToolbarPropsEqual = (prevProps: ToolbarProps, nextProps: ToolbarProps) => {
-  return prevProps.currentPen === nextProps.currentPen &&
-         prevProps.currentPen.cursorHandler === nextProps.currentPen.cursorHandler &&
-         prevProps.activePath.path.countPoints() === nextProps.activePath.path.countPoints() &&
-         prevProps.paths.length === nextProps.paths.length &&
-         prevProps.redoStack.length === nextProps.redoStack.length &&
-         prevProps.drawingAreaDims === nextProps.drawingAreaDims;
+  return prevProps.drawingState.currentPen === nextProps.drawingState.currentPen &&
+         prevProps.drawingState.currentPen.cursorHandler === nextProps.drawingState.currentPen.cursorHandler &&
+         prevProps.drawingState.activePath.path.countPoints() === nextProps.drawingState.activePath.path.countPoints() &&
+         prevProps.drawingState.paths.length === nextProps.drawingState.paths.length &&
+         prevProps.drawingState.redoStack.length === nextProps.drawingState.redoStack.length;
 };
 
 const styles = StyleSheet.create({

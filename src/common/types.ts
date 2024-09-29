@@ -22,6 +22,23 @@ export type PathWithPaint = {
   paint: SkPaint;
 }
 
+export type DrawingState = {
+  activePath: PathWithPaint,
+  paths: PathWithPaint[],
+  cursor: SkPoint,
+  redoStack: PathWithPaint[],
+  currentPen: Pen,
+  isDrawing: boolean,
+}
+
+export type DrawingAction = 
+    { type: 'setActivePath', payload: PathWithPaint }
+  | { type: 'setPaths', payload: PathWithPaint[] }
+  | { type: 'setCursor', payload: SkPoint }
+  | { type: 'setRedoStack', payload: PathWithPaint[] }
+  | { type: 'setCurrentPen', payload: Pen }
+  | { type: 'setIsDrawing', payload: boolean }
+
 export interface ToolProps {
   activePath: PathWithPaint,
   setActivePath: React.Dispatch<React.SetStateAction<PathWithPaint>>,
@@ -36,24 +53,17 @@ export interface Pen {
   getCursorIcon: (isDrawing: boolean) => React.ReactNode,
 }
 
-export interface CursorHandlerProps extends ToolProps {
-  pen: Pen,
-  isDrawing: Boolean,
-  setIsDrawing: React.Dispatch<React.SetStateAction<boolean>>
-  cursor: SkPoint,
-  setCursor: React.Dispatch<React.SetStateAction<SkPoint>>,
+export interface CursorHandlerProps {
+  drawingState: DrawingState,
+  setDrawingState: React.Dispatch<DrawingAction>,
   cursorToCanvas: (cursorPos: any) => (any),
-  redoStack: PathWithPaint[],
-  setRedoStack: React.Dispatch<React.SetStateAction<PathWithPaint[]>>,
   children: any,
 }
 
-export interface ToolbarProps extends ToolProps {
-  currentPen: Pen,
-  setCurrentPen: React.Dispatch<React.SetStateAction<Pen>>,
-  redoStack: PathWithPaint[],
-  setRedoStack: React.Dispatch<React.SetStateAction<PathWithPaint[]>>,
-  drawingAreaPos: {x: number, y: number},
+export interface ToolbarProps {
+  drawingState: DrawingState,
+  setDrawingState: React.Dispatch<DrawingAction>,
+  cursorToCanvas: (cursorPos: any) => (any),
   drawingAreaDims: {width: number, height: number},
 }
 

@@ -19,6 +19,7 @@ import React, {
   useCallback,
   ReactNode,
   createContext,
+  useReducer,
 } from "react";
 
 import ReactDOMServer from 'react-dom/server';
@@ -64,6 +65,8 @@ import {
   Pen,
   PathWithPaint,
   CursorHandler,
+  DrawingState,
+  DrawingAction,
 } from "../../common/types"
 
 import {
@@ -71,52 +74,52 @@ import {
   applyScaleToScale,
   applyInverseScale,
 } from "./MatrixHelpers";
+import { pen } from "./pens/ColorWeightPen";
 
 var Victor = require('victor');
 
 const MemoToolbar = React.memo(Toolbar, areToolbarPropsEqual);
 
+const initialDrawingState = {
+  activePath: {path: Skia.Path.Make(), paint: Skia.Paint()},
+  paths: [],
+  cursor: vec(0, 0),
+  redoStack: [],
+  currentPen: pen,
+  isDrawing: false,
+}
+
+const drawingReducer = (state: DrawingState, action: DrawingAction) => {
+  switch (action.type) {
+    case 'setActivePath':
+      return {...state, activePath: action.payload};
+    case 'setPaths':
+      return {...state, paths: action.payload};
+    case 'setCursor':
+      return {...state, cursor: action.payload};
+    case 'setRedoStack':
+      return {...state, redoStack: action.payload};
+    case 'setCurrentPen':
+      return {...state, currentPen: action.payload};
+    case 'setIsDrawing':
+      return {...state, isDrawing: action.payload};
+    default:
+      return state;
+  }
+}
+
 export const Drawing = () => {
   const width = Dimensions.get('window').width;
   const height = Dimensions.get('window').height;
 
-  const [drawingAreaPos, setDrawingAreaPos] = useState({x: 0, y: 0});
   const [drawingAreaDims, setDrawingAreaDims] = useState({width: 0, height: 0});
 
-  const [activePath, setActivePath] = useState<PathWithPaint>({path: Skia.Path.Make(), paint: Skia.Paint()});
-  const [paths, setPaths] = useState<PathWithPaint[]>([]);
-  const [cursor, setCursor] = useState(vec(0, 0));
+  const [drawingState, setDrawingState] = useReducer(drawingReducer, initialDrawingState);
 
-  const [redoStack, setRedoStack] = useState<PathWithPaint[]>([]);
-
-  const [currentPen, setCurrentPen] = useState<Pen>(
-    {
-      penDown: (penPoint: SkPoint) => ({path: Skia.Path.Make(), paint: Skia.Paint()}),
-      penMove: (path: PathWithPaint, penPoint: SkPoint) => path,
-      cursorHandler: CursorHandler.CursorDirect,
-      getCursorIcon: () => (<></>),
-    }
-  );
-
-  const [isDrawing, setIsDrawing] = useState(false);
   // where the cursor was last placed in place mode
   const placedCursor = useRef(vec(0, 0));
   // where the cursor was when drawing started
   const cursorStart = useRef(vec(0, 0));
-
-  const drawingContext = createContext({
-    isDrawing: isDrawing,
-    setIsDrawing: setIsDrawing,
-    activePath: activePath,
-    setActivePath: setActivePath,
-    paths: paths,
-    setPaths: setPaths,
-    cursor: cursor,
-    setCursor: setCursor,
-    redoStack: redoStack,
-    setRedoStack: setRedoStack,
-    cursorToCanvas: (pos: any) => applyInverseScale(zoomMatrix, pos),
-  })
 
   const cursorBBoxSize = 80;
 
@@ -143,34 +146,16 @@ export const Drawing = () => {
     .onChange(onZoomChange);
 
   const renderCurrentPenHandler = (children: ReactNode) => {
-    switch (currentPen.cursorHandler) {
+    switch (drawingState.currentPen.cursorHandler) {
       case CursorHandler.CursorAlternating:
-        return (<CursorAlternating pen={currentPen}
-                                   isDrawing={isDrawing}
-                                   setIsDrawing={setIsDrawing}
-                                   activePath={activePath}
-                                   setActivePath={setActivePath}
-                                   paths={paths}
-                                   setPaths={setPaths}
-                                   cursor={cursor}
-                                   setCursor={setCursor}
-                                   redoStack={redoStack}
-                                   setRedoStack={setRedoStack}
+        return (<CursorAlternating drawingState={drawingState}
+                                   setDrawingState={setDrawingState}
                                    cursorToCanvas={(pos: any) => applyInverseScale(zoomMatrix, pos)}>
                   {children}
                 </CursorAlternating>);
       case CursorHandler.CursorDirect:
-        return (<CursorDirect pen={currentPen}
-                              isDrawing={isDrawing}
-                              setIsDrawing={setIsDrawing}
-                              activePath={activePath}
-                              setActivePath={setActivePath}
-                              paths={paths}
-                              setPaths={setPaths}
-                              cursor={cursor}
-                              setCursor={setCursor}
-                              redoStack={redoStack}
-                              setRedoStack={setRedoStack}
+        return (<CursorDirect drawingState={drawingState}
+                              setDrawingState={setDrawingState}
                               cursorToCanvas={(pos: any) => applyInverseScale(zoomMatrix, pos)}>
                   {children}
                 </CursorDirect>);
@@ -186,31 +171,24 @@ export const Drawing = () => {
         <GestureDetector gesture={zoom}>
           <>
           {renderCurrentPenHandler(
-            <ScriblCanvas activePath={activePath} paths={paths} contentTransformMatrix={zoomMatrix}>
+            <ScriblCanvas activePath={drawingState.activePath} paths={drawingState.paths} contentTransformMatrix={zoomMatrix}>
               <Group transform={fitbox("contain", rect(0, 0, cursorBBoxSize, cursorBBoxSize),
-                                                  rect(cursor.x, cursor.y, cursorBBoxSize, cursorBBoxSize))}>
-                {currentPen.getCursorIcon(isDrawing)}
+                                                  rect(drawingState.cursor.x, drawingState.cursor.y, cursorBBoxSize, cursorBBoxSize))}>
+                {drawingState.currentPen.getCursorIcon(drawingState.isDrawing)}
               </Group>  
             </ScriblCanvas>
           )}
           <View pointerEvents="box-none"
                 style={styles.toolbar} onLayout={
                 (event) => {
-                  setDrawingAreaPos({x: event.nativeEvent.layout.x, y: event.nativeEvent.layout.y});
                   setDrawingAreaDims({width: event.nativeEvent.layout.width, height: event.nativeEvent.layout.height});
                   console.log("dims", event.nativeEvent.layout.width, event.nativeEvent.layout.height);
                 }
           }>
-            <MemoToolbar currentPen={currentPen}
-                     setCurrentPen={setCurrentPen}
-                     activePath={activePath}
-                     setActivePath={setActivePath}
-                     paths={paths}
-                     setPaths={setPaths}
-                     redoStack={redoStack}
-                     setRedoStack={setRedoStack}
-                     drawingAreaPos={drawingAreaPos}
-                     drawingAreaDims={drawingAreaDims}
+            <MemoToolbar drawingState={drawingState}
+                         setDrawingState={setDrawingState}
+                         cursorToCanvas={(pos: any) => applyInverseScale(zoomMatrix, pos)}
+                         drawingAreaDims={drawingAreaDims}
                      />
           </View>
           </>
