@@ -292,13 +292,14 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             <ToolbarUndoRedoButton onPress={() => {
               console.log("undo");
               if (drawingState.paths.length === 0) {
-                setDrawingState({type: 'setRedoStack', payload: drawingState.redoStack});
               } else {
                 setDrawingState({type: 'setRedoStack', payload: [...drawingState.redoStack, drawingState.activePath]});
               }
               const lastPathInd = drawingState.paths.length - 1;
-              setDrawingState({type: 'setActivePath', payload: drawingState.paths[lastPathInd]});
-              setDrawingState({type: 'setPaths', payload: drawingState.paths.slice(0, lastPathInd)});
+              if (lastPathInd >= 0) {
+                setDrawingState({type: 'setActivePath', payload: drawingState.paths[lastPathInd]});
+                setDrawingState({type: 'setPaths', payload: drawingState.paths.slice(0, lastPathInd)});
+              }
             }}
               iconName={undoIcon}
               
