@@ -13,14 +13,6 @@ import {
 } from "../pens/ColorWeightPen"
 
 import {
-  ToolbarProps,
-  CursorHandler,
-  PathWithPaint,
-} from "../../../common/types";
-
-import { ToolbarUndoRedoButton } from "../../../components/buttons/Toolbar/ToolbarUndoRedoButton";
-
-import {
   Gesture,
   GestureDetector,
   GestureStateChangeEvent,
@@ -38,7 +30,17 @@ import Animated, {
 
 var Victor = require('victor');
 
-type FlexDirection = 'row' | 'row-reverse' | 'column' | 'column-reverse' | undefined;
+import {
+  ToolbarProps,
+  CursorHandler,
+  PathWithPaint,
+  FlexDirection,
+  ToolbarMagnetName
+} from "../../../common/types";
+
+import { ToolbarUndoRedoButton } from "../../../components/buttons/Toolbar/ToolbarUndoRedoButton";
+
+import { useToolbarAnimation } from "../../../hooks/useToolbarAnimation";
 
 type ToolbarSV = {
   width?: number,
@@ -60,22 +62,12 @@ type HandleSV = {
   height?: number,
 };
 
-enum ToolbarMagnetName {
-  Bottom,
-  Top,
-  Left,
-  Right,
-};
-
 export const Toolbar: React.FC<ToolbarProps> = ({
   drawingState,
   setDrawingState,
   cursorToCanvas,
   drawingAreaDims,
 }) => {
-
-  const [toolbarCollapsed, setToolbarCollapsed] = useState(false);
-  const [toolbarMagnet, setToolbarMagnet] = useState(ToolbarMagnetName.Bottom);
 
   const toolbarShortAxis = 75;
   const toolbarLongAxis = 310;
@@ -84,6 +76,27 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   const toolbarHandleLongAxis = 30;
 
   const borderRadius = 10;
+
+  const {
+    toolbarCollapsed,
+    toolbarMagnet,
+    setToolbarMagnet,
+    toolbarStyle,
+    toolbarHandleStyle,
+    toolbarButtonContainerStyle,
+    getToolbarPosition,
+    collapseToolbar,
+    expandToolbar,
+    getMinEdgeDistance,
+  } = useToolbarAnimation({
+    initialMagnet: ToolbarMagnetName.Bottom,
+    drawingAreaDims,
+    toolbarShortAxis,
+    toolbarLongAxis,
+    toolbarHandleShortAxis,
+    toolbarHandleLongAxis,
+    borderRadius,
+  });
 
   useEffect(() => {
     expandToolbar(toolbarMagnet);
@@ -123,65 +136,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     };
   }
 
-  const getMinEdgeDistance = ({x, y}: {x: number, y: number}): {dist: number, magnet: ToolbarMagnetName} => {
-    const dists = [{dist: x - (toolbarShortAxis + styles.toolbar.margin), magnet: ToolbarMagnetName.Left},
-                   {dist: y - 2*(toolbarShortAxis + styles.toolbar.margin), magnet: ToolbarMagnetName.Top},
-                   {dist: (drawingAreaDims.width - toolbarShortAxis - styles.toolbar.margin) - x, magnet: ToolbarMagnetName.Right},
-                   {dist: (drawingAreaDims.height) - y, magnet: ToolbarMagnetName.Bottom}];
-
-    return dists.reduce((min, p) => p.dist < min.dist ? p : min, dists[0]);
-  }
-
-  const collapseToolbar = (magnet: ToolbarMagnetName) => {
-    updateToolbarHandleSV({width: toolbarHandleShortAxis, height: toolbarHandleShortAxis});
-    switch (magnet) {
-      case ToolbarMagnetName.Bottom:
-        updateToolbarSV({width: toolbarShortAxis, height: toolbarShortAxis, borderRadius: toolbarShortAxis/2, flexDirection: 'column'});
-        updateButtonContainerSV({opacity: 0, scaleX: 0, scaleY: 0, flexDirection: 'row'});
-        break;
-      case ToolbarMagnetName.Top:
-        updateToolbarSV({width: toolbarShortAxis, height: toolbarShortAxis, borderRadius: toolbarShortAxis/2, flexDirection: 'column-reverse'});
-        updateButtonContainerSV({opacity: 0, scaleX: 0, scaleY: 0, flexDirection: 'row'});
-        break;
-      case ToolbarMagnetName.Left:
-        updateToolbarSV({width: toolbarShortAxis, height: toolbarShortAxis, borderRadius: toolbarShortAxis/2, flexDirection: 'row-reverse'});
-        updateButtonContainerSV({opacity: 0, scaleX: 0, scaleY: 0, flexDirection: 'column'});
-        break;
-      case ToolbarMagnetName.Right:
-        updateToolbarSV({width: toolbarShortAxis, height: toolbarShortAxis, borderRadius: toolbarShortAxis/2, flexDirection: 'row'});
-        updateButtonContainerSV({opacity: 0, scaleX: 0, scaleY: 0, flexDirection: 'column'});
-        break;
-    }
-    setToolbarCollapsed(true);
-  }
-
-  const expandToolbar = (magnetName: ToolbarMagnetName) => {
-    switch (magnetName) {
-      case ToolbarMagnetName.Bottom:
-        updateToolbarSV({width: toolbarLongAxis, height: toolbarShortAxis, borderRadius: borderRadius, flexDirection: 'column'});
-        updateToolbarHandleSV({width: toolbarHandleLongAxis, height: toolbarHandleShortAxis});
-        updateButtonContainerSV({opacity: 1, scaleX: 1, scaleY: 1, flexDirection: 'row'});
-        break;
-      case ToolbarMagnetName.Top:
-        updateToolbarSV({width: toolbarLongAxis, height: toolbarShortAxis, borderRadius: borderRadius, flexDirection: 'column-reverse'});
-        updateToolbarHandleSV({width: toolbarHandleLongAxis, height: toolbarHandleShortAxis});
-        updateButtonContainerSV({opacity: 1, scaleX: 1, scaleY: 1, flexDirection: 'row'});
-        break;
-      case ToolbarMagnetName.Left:
-        updateToolbarSV({width: toolbarShortAxis, height: toolbarLongAxis, borderRadius: borderRadius, flexDirection: 'row-reverse'});
-        updateToolbarHandleSV({width: toolbarHandleShortAxis, height: toolbarHandleLongAxis});
-        updateButtonContainerSV({opacity: 1, scaleX: 1, scaleY: 1, flexDirection: 'column'});
-        break;
-      case ToolbarMagnetName.Right:
-        updateToolbarSV({width: toolbarShortAxis, height: toolbarLongAxis, borderRadius: borderRadius, flexDirection: 'row'});
-        updateToolbarHandleSV({width: toolbarHandleShortAxis, height: toolbarHandleLongAxis});
-        updateButtonContainerSV({opacity: 1, scaleX: 1, scaleY: 1, flexDirection: 'column'});
-        break;
-    }
-    setToolbarMagnet(magnetName);
-    setToolbarCollapsed(false);
-  }
-
   const grabStart = (event: GestureStateChangeEvent<PanGestureHandlerEventPayload>) => {
   };
 
@@ -205,44 +159,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
   const undoIcon = (drawingState.currentPen.cursorHandler === CursorHandler.CursorAlternating) ? "backward-fast" : "arrow-rotate-left";
   const redoIcon = (drawingState.currentPen.cursorHandler === CursorHandler.CursorAlternating) ? "forward-fast" : "arrow-rotate-right";
-
-  const toolbarStyle = useAnimatedStyle(() => {
-    return {
-      width: withTiming(toolbarSV.value.width ?? toolbarLongAxis),
-      height: withTiming(toolbarSV.value.height ?? toolbarShortAxis),
-      borderRadius: withTiming(toolbarSV.value.borderRadius ?? borderRadius),
-      flexDirection: toolbarSV.value.flexDirection ?? 'column',
-      margin: toolbarSV.value.margin ?? 10,
-    }
-  });
-
-  const toolbarHandleStyle = useAnimatedStyle(() => {
-    return {
-      width: withTiming(handleSV.value.width ?? toolbarHandleLongAxis),
-      height: withTiming(handleSV.value.height ?? toolbarHandleShortAxis),
-    }
-  });
-
-  const toolbarButtonContainerStyle = useAnimatedStyle(() => {
-    return {
-      opacity: withTiming(buttonContainerSV.value.opacity ?? 1, {duration: 90}),
-      transform: [{scaleX: withTiming(buttonContainerSV.value.scaleX ?? 1)},
-                  {scaleY: withTiming(buttonContainerSV.value.scaleY ?? 1)}],
-      flexDirection: buttonContainerSV.value.flexDirection ?? 'row',
-    }
-  });
-
-  const getToolbarPosition = () => {
-    const position = toolbarMagnet === ToolbarMagnetName.Bottom ? {bottom: 0} :
-                     toolbarMagnet === ToolbarMagnetName.Top ? {top: 0} :
-                     toolbarMagnet === ToolbarMagnetName.Left ? {left: 0} :
-                     {right: 0};
-    return StyleSheet.create({
-      toolbar: {
-        ...position,
-      }
-    });
-  }
 
   const toolbarHints = () => {
     if (toolbarCollapsed) {
@@ -277,7 +193,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     <>
       {toolbarHints()}
       <GestureDetector gesture={grabGesture}>
-        <Animated.View style={[toolbarStyle, getToolbarPosition().toolbar, styles.toolbar]}>
+        <Animated.View style={[toolbarStyle, getToolbarPosition(), styles.toolbar]}>
             <Animated.View hitSlop={{top: 20, bottom: 50, left: 20, right: 20}}
                           style={[toolbarHandleStyle, styles.toolbarHandle]}/>
           <Animated.View style={[toolbarButtonContainerStyle, styles.buttonContainer]}>

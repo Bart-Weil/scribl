@@ -39,6 +39,15 @@ export type DrawingAction =
   | { type: 'setCurrentPen', payload: Pen }
   | { type: 'setIsDrawing', payload: boolean }
 
+export type FlexDirection = 'row' | 'row-reverse' | 'column' | 'column-reverse' | undefined;
+
+export enum ToolbarMagnetName {
+  Bottom,
+  Top,
+  Left,
+  Right,
+};
+
 export interface ToolProps {
   activePath: PathWithPaint,
   setActivePath: React.Dispatch<React.SetStateAction<PathWithPaint>>,
